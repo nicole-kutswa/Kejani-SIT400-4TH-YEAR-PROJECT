@@ -5,7 +5,10 @@ from .views import (
     VerifyEmailView,
     UserProfileView, 
     PreferencesView, 
-    RoomListingListCreateView
+    RoomListingListCreateView,
+    RoomListingDetailView
+
+
 )
 
 urlpatterns = [
@@ -15,4 +18,5 @@ urlpatterns = [
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('preferences/', PreferencesView.as_view(), name='user-preferences'),
     path('listings/', RoomListingListCreateView.as_view(), name='room-listings'),
+    path('listings/<int:pk>/', RoomListingDetailView.as_view(), name='room-listing-detail'),
 ]

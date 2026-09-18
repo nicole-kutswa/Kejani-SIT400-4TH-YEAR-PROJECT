@@ -149,3 +149,33 @@ class RoomListingListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+
+
+class RoomListingDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = RoomListing.objects.all()
+    serializer_class = RoomListingSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return RoomListing.objects.filter(is_active=True)
+
+    def perform_update(self, serializer):
+        if serializer.instance.owner != self.request.user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied(
+                "You can only edit your own listings."
+            )
+
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.owner != self.request.user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied(
+                "You can only delete your own listings."
+            )
+
+        instance.delete()
+
+

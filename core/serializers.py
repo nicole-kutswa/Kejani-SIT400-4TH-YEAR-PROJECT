@@ -90,6 +90,11 @@ class RegisterSerializer(serializers.ModelSerializer):
                 'Please use your Kenyatta University student email.'
             )
 
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                'An account with this email already exists.'
+            )
+
         return value
 
     def create(self, validated_data):
@@ -137,16 +142,68 @@ If you did not create this account, please ignore this email.
 
 # 3. Preferences Serializer
 class PreferencesSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
-
     class Meta:
         model = Preferences
-        fields = ['id', 'user', 'budget_max', 'preferred_location', 'cleanliness_level', 'study_habits', 'smoking_allowed', 'guests_allowed']
+        fields = [
+            'id',
+            'user',
+            'budget_max',
+            'preferred_location',
+            'cleanliness_level',
+            'study_habits',
+            'smoking_allowed',
+            'guests_allowed',
+        ]
+        read_only_fields = ['id', 'user']
+
+    def validate_budget_max(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                'Budget cannot be negative.'
+            )
+
+        return value
+
+    def validate_cleanliness_level(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError(
+                'Cleanliness level must be between 1 and 5.'
+            )
+
+        return value
 
 # 4. Room Listing Serializer
 class RoomListingSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
+    owner = serializers.CharField(
+        source='owner.username',
+        read_only=True
+    )
 
     class Meta:
         model = RoomListing
-        fields = ['id', 'owner', 'title', 'description', 'location', 'total_rent', 'rent_per_person', 'rooms_available', 'is_active', 'created_at']
+        fields = [
+            'id',
+            'owner',
+            'title',
+            'description',
+            'location',
+            'property_type',
+            'total_rent',
+            'rent_per_person',
+            'current_occupants',
+            'spaces_available',
+            'furnished',
+            'utilities_included',
+            'gender_preference',
+            'move_in_date',
+            'amenities',
+            'is_active',
+            'created_at',
+        ]
+
+        read_only_fields = [
+            'id',
+            'owner',
+            'rent_per_person',
+            'created_at',
+        ]
