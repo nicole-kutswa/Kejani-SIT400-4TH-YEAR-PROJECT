@@ -207,3 +207,15 @@ class RoomListingSerializer(serializers.ModelSerializer):
             'rent_per_person',
             'created_at',
         ]
+
+class MatchSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username')
+    match_score = serializers.IntegerField()
+
+    class Meta:
+        model = Preferences
+        fields = [
+            'user',
+            'username',
+            'match_score',
+        ]

@@ -1,17 +1,21 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import generics, status, permissions
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.utils import timezone
+from .matching import calculate_match_score
 
 from .models import StudentProfile, Preferences, RoomListing
 from .serializers import (
     RegisterSerializer, 
     UserSerializer, 
     PreferencesSerializer, 
-    RoomListingSerializer
+    RoomListingSerializer,
+    MatchSerializer
+
 )
 
 # 1. User Registration Endpoint
@@ -178,4 +182,37 @@ class RoomListingDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         instance.delete()
 
+class MatchesView(generics.ListAPIView):
+    serializer_class = MatchSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        current_user = self.request.user
+
+        try:
+            current_preferences = current_user.preferences
+        except Preferences.DoesNotExist:
+            return Preferences.objects.none()
+
+        other_preferences = Preferences.objects.exclude(
+            user=current_user
+        )
+
+        matches = []
+
+        for preferences in other_preferences:
+            score = calculate_match_score(
+                current_preferences,
+                preferences
+            )
+
+            preferences.match_score = score
+            matches.append(preferences)
+
+        matches.sort(
+            key=lambda preferences: preferences.match_score,
+            reverse=True
+        )
+
+        return matches
 

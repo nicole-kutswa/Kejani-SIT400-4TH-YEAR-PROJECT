@@ -6,7 +6,8 @@ from .views import (
     UserProfileView, 
     PreferencesView, 
     RoomListingListCreateView,
-    RoomListingDetailView
+    RoomListingDetailView,
+    MatchesView
 
 
 )
@@ -19,4 +20,5 @@ urlpatterns = [
     path('preferences/', PreferencesView.as_view(), name='user-preferences'),
     path('listings/', RoomListingListCreateView.as_view(), name='room-listings'),
     path('listings/<int:pk>/', RoomListingDetailView.as_view(), name='room-listing-detail'),
+    path('matches/', MatchesView.as_view(), name='matches'),
 ]
